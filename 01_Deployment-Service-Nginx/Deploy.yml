@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  namespace: nginx-ns
+  name: nginxdeploy
+  
+#Deployment spec
+spec:  
+  replicas: 2
+  selector:
+    matchLabels:               
+      app: nginx  #this should be same as labels under template
+
+#Pod template
+  template:    
+    metadata:
+      name: nginxdeploypod
+      labels:     # Deployment creates pods by taking these labels as reference           
+        app: nginx
+
+ #Pod spec
+    spec:
+      containers:
+      - name: nginxdeploycont
+        image: nginx:latest
+        ports:
+        - containerPort: 80

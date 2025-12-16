@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: bkupjob
+  namespace: nginx-ns
+
+#Job spec
+spec:
+  completions: 1 #  total number of pods to be created
+  parallelism: 1 #  number of pods to run in parallel
+
+  template:   # template to create a metadata
+    metadata:
+      name: bkupjobpod
+      labels:
+        app: bjob
+        
+    #Pod spec
+    spec: 
+      containers:
+        - name: bkupjobcont
+          image: busybox:latest
+          command: ["sh", "-c", "echo Hey Backup is Done! && sleep 10"]
+      restartPolicy: Never

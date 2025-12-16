@@ -1,0 +1,71 @@
+#Namespace
+
+apiVersion: v1
+kind: Namespace 
+
+metadata:
+  name: storagek8s
+
+---
+
+#StatefulSet for MySQL with HostPath Volume
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-volume-mysql
+  namespace: storagek8s
+spec:
+  selector:
+    app: mysqlvolume
+  ports:
+  - port: 3306
+    targetPort: 3306
+  clusterIP: None
+
+---
+
+#StatefulSet for MySQL with  Volume
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sset-volume-mysql
+  namespace: storagek8s
+spec:
+  serviceName: svc-volume-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqlvolume
+  template:
+    metadata:
+      labels:
+        app: mysqlvolume
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+          name: mysql
+
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+
+
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: standard # specify storage class name shoulb be an ebs gp3 but we are kind cluster so standard
+      resources:
+        requests:
+          storage: 500Mi

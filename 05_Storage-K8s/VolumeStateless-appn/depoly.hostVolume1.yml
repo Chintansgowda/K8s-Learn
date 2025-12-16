@@ -1,0 +1,54 @@
+#Lets see how to use Host Path (host directory storage) as Volume in a Deployment
+
+# Namespace for the Deployment
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: storagek8s
+
+
+---
+
+# Deployment to demonstrate Host Path Volume
+
+apiVersion: apps/v1
+kind: Deployment
+
+# Metadata of the Deployment
+metadata:  
+  name: hostvolumedeploy
+  namespace: storagek8s
+
+# Deployment spec  
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hostvolume
+
+# Pod template    
+  template:
+    metadata: # Metadata of the Pod
+      name: hostvolumepod
+      labels:
+        app: hostvolume
+
+    # Pod spec    
+    spec:
+      containers:
+      - name: hostvolumecont
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:     # Mounting the Host Path Volume inside the container
+        - name: hostvolume
+          mountPath: /usr/share/nginx/html
+
+      # Configuring Host Path Volume    
+      volumes:
+      - name: hostvolume
+        hostPath:
+          path: /mnt/data
+          type: DirectoryOrCreate

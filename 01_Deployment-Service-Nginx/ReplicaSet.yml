@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+
+metadata:
+  namespace: nginx-ns
+  name: nginxrset
+
+spec:
+  replicas: 2
+  
+  selector:
+    matchLabels:               
+      app: nginx #  this should be same as labels under template
+
+  template:    # Pod template
+    metadata:
+      name: nginxrsetpod
+      labels:                
+        app: nginx
+
+    spec:
+      containers:
+      - name: nginxrsetcont
+        image: nginx:latest
+        ports:
+        - containerPort: 80

@@ -1,0 +1,60 @@
+#Lets see how to use Host Path (host directory storage) as Volume in a Deployment using another way i e Pv.yml and PVC.yml
+
+#Usually Host Path Volume is used for testing purpose not for production
+
+#and to mount host path pv.yml and pvc.yml are not needed we can directly use host path in deployment as shown in deploy.hostVolume1.yml
+
+#pvc,yml and pv.yml are used in mounting an external storage like ebs to k8s cluster even there pv automatically gets created when we create pvc with the help of storage class in pvc
+
+
+# Namespace for the Deployment
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: storagek8s
+
+---
+
+# Deployment to demonstrate Host Path Volume
+
+apiVersion: apps/v1
+kind: Deployment
+
+# Metadata of the Deployment
+metadata:  
+  name: hostvolumedeploy
+  namespace: storagek8s
+
+# Deployment spec  
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hostvolume
+
+# Pod template    
+  template:
+    metadata: # Metadata of the Pod
+      name: hostvolumepod
+      labels:
+        app: hostvolume
+
+    # Pod spec    
+    spec:
+      containers:
+      - name: hostvolumecont
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:     # Mounting the Host Path Volume inside the container
+        - name: hostvolume2
+          mountPath: /usr/share/nginx/html
+
+      volumes:   
+      - name: hostvolume2
+        persistentVolumeClaim:
+          claimName: hostvolume2claim #Must be same as the PVC name created earlier
+
+

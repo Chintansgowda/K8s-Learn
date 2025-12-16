@@ -1,0 +1,75 @@
+# ===============================
+# MongoDB Namespace
+# ===============================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mongodb
+
+---
+
+# ===============================
+# Headless Service (required for StatefulSet)
+# ===============================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-svc
+  namespace: mongodb
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+
+# ===============================
+# MongoDB StatefulSet
+# ===============================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: mongodb
+spec:
+  serviceName: mongodb-svc
+  replicas: 1   # Stateful app → start with 1
+  selector:
+    matchLabels:
+      app: mongodb
+
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:6.0
+          ports:
+            - containerPort: 27017
+
+          # Initial resources (VPA will tune these)
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "256Mi"
+            limits:
+              cpu: "75m"
+              memory: "512Mi"
+
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi

@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-apache-path-ingress
+  namespace: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/"   # Rewrite: Incoming paths like /nginx or /apache are changed to "/" when forwarded to backend because the containers do not have /nginx or /apache paths
+
+spec:
+  # preferred in newer k8s:
+  ingressClassName: nginx # You could use this or the annotation above 
+
+  rules:
+    - http:
+        paths:
+          - path: /nginx
+            pathType: Prefix
+            backend:
+              service:
+                name: ingress-nginx-service #must match the service name created for nginx
+                port:
+                  number: 8080    # <-- must match ingress-nginx-service.spec.ports[].port
+          - path: /apache
+            pathType: Prefix
+            backend:
+              service:
+                name: ingress-apache-service #must match the service name created for apache
+                port:
+                  number: 8081    # <-- must match ingress-apache-service.spec.ports[].port

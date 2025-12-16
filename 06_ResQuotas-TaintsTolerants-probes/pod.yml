@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: samplepod
+spec:
+
+  #Taints and Tolerations
+  tolerations:  
+  - key: "prod"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+  containers:
+    - name: samplepod-cont
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+
+      # Resource Requests and Limits
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "256Mi"
+
+    #Readiness and Liveness Probes
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 80
+      readinessProbe:
+        httpGet:
+          path: /
+          port: 80
+    
+      
+
+
+
+
+
+
+      

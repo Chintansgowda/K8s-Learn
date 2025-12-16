@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+
+metadata:
+  name: apache-manager-rolebinding
+  namespace: apache
+
+subjects:
+- kind: ServiceAccount      
+  name: apachesvcacc #must match the svcacc name in svcacc.yml
+  namespace: apache  #must be same namespace in svcacc.yml and rolebinding.yml 
+
+  # we used namespace here beacuse subject is in namespace scope if he used an exteranl subject (user/group) then instead of namespace we will use apigroup
+
+roleRef:
+  kind: Role
+  name: apache-manager-role #must match the role name in role.yml
+  apiGroup: rbac.authorization.k8s.io
+
