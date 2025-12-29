@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: DaemonSet
+
+metadata:
+  namespace: nginx-ns
+  name: nginxdset
+spec:
+  
+  selector:
+    matchLabels:               
+      app: nginx #  this should be same as labels under template
+
+  template:    # Pod template
+    metadata:
+      name: nginxdsetpod
+      labels:  # DaemonSet creates pods by taking these labels as reference            
+        app: nginx
+
+    spec:  # Pod spec
+      containers:
+      - name: nginxdsetcont
+        image: nginx:latest
+        ports:
+        - containerPort: 80

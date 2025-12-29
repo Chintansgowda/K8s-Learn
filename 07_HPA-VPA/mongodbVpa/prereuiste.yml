@@ -1,0 +1,57 @@
+# #Install the metrics-server
+   
+    # If you are using a Kind cluster install Metrics Server
+
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+    # Edit the Metrics Server Deployment
+
+    kubectl -n kube-system edit deployment metrics-server
+
+    # Add the security bypass to deployment under container.args
+
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+    
+    kubectl top nodes
+
+# Install the VPA components
+
+   git clone https://github.com/kubernetes/autoscaler.git
+
+   cd autoscaler/vertical-pod-autoscaler
+
+   ./hack/vpa-up.sh
+
+#Verify VPA installation
+
+   kubectl get crd | grep verticalpodautoscaler 
+
+   # You should see:
+
+   verticalpodautoscalers.autoscaling.k8s.io
+   verticalpodautoscalercheckpoints.autoscaling.k8s.io
+
+
+# Check pods:
+
+kubectl get pods -n kube-system | grep vpa 
+
+# You should see:
+
+    vpa-recommender
+    vpa-updater
+    vpa-admission-controller
+
+
+#To generate load 
+
+use test
+for (let i = 0; i < 100000; i++) {
+  db.data.insertOne({x: i, value: "load-test"})
+}
+
+
+
+
+

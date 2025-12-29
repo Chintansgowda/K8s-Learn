@@ -1,0 +1,54 @@
+##DEPLOYMENT YAML FOR NGINX SERVER##
+apiVersion: apps/v1
+kind: Deployment
+
+metadata: #Deploy metadata
+  name: ingress-nginx-deploy
+  namespace: ingress
+  labels:
+    env: dev
+
+spec: #Deploy spec
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginxapache #Should be same as labels under pod template
+
+  #Pod Template
+  template:
+    metadata: #Pod metadate
+      # name: ingress-nginx-Pod   #not needed k8s ignores this in deploy.yml replica.yml pods names are generated automatically 
+      labels:
+        app: nginxapache
+
+
+    spec:  #Pod spec
+      containers:
+      - name: ingress-nginx-cont
+        image: nginx:1.25.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+
+---
+
+##SERVICE YAML FOR NGINX SERVER##
+
+apiVersion: v1
+kind: Service
+
+metadata: #Service metadata
+  name: ingress-nginx-service
+  namespace: ingress
+  labels:
+    env: dev
+
+spec: #Service spec
+  selector:
+    app: nginxapache  #Should be same as the labels under pod template in deploy.yml
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 80
+  type: ClusterIP
+    
