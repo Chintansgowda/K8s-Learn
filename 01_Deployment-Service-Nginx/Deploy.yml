@@ -1,28 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 
+# Deplyoment Metadata - consists namespace and name of deploymnet
 metadata:
-  namespace: nginx-ns
-  name: nginxdeploy
-  
-#Deployment spec
-spec:  
+  name: nginx-deploy
+  namespace: nginx
+
+# Deployment specs - consists an replicas and selector to match labels of pod 
+spec:
   replicas: 2
   selector:
-    matchLabels:               
-      app: nginx  #this should be same as labels under template
+    matchLabels:
+      app: nginx #label to match with pod labels
 
-#Pod template
-  template:    
-    metadata:
-      name: nginxdeploypod
-      labels:     # Deployment creates pods by taking these labels as reference           
+  #Pod Template - consists metadata and specs of pod 
+  template:
+    metadata: #Pod metadata - consists name, labels(identity of pods), labels are mandatorly essential in replication of pods 
+      name: nginx-deploy-pod
+      labels:
         app: nginx
 
- #Pod spec
+    #Pd specs - consists and conatiner and its specs
     spec:
       containers:
-      - name: nginxdeploycont
+      - name: nginx-deploy-cont
         image: nginx:latest
         ports:
         - containerPort: 80
