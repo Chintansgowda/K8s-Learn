@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 FROM python:3.11-slim
+=======
+FROM python:3.11
+>>>>>>> 732bb9404fc5418ab8a28a142dcbc88db42e856e
 
 WORKDIR /app
 
