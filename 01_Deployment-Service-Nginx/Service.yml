@@ -10,6 +10,6 @@ spec:
     app: nginx #Must match the labels defined in the deployment pod template
   ports:
     - protocol: TCP
-      port: 8000 #It is the port on which service will be exposed and we will map this port with system port to access the service from outside the cluster using clustetIp or nodeport service or kubectl port-forward command
+      port: 8000 #It is the port on which service will be exposed and we will map this port with targetPort(app port) to access the service from outside the cluster using clustetIp or nodeport service or kubectl port-forward command
       targetPort: 80 #It is the port app is listening inside the container
   type: ClusterIP #By default, service type is ClusterIP even if we don't specify it also once we create the service clusterIP type will be assigned
