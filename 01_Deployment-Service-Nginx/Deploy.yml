@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 
-<<<<<<< HEAD
+
 metadata:
   namespace: nginx-ns
   name: nginxdeploy
@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: nginxdeploycont
-=======
+
 # Deplyoment Metadata - consists namespace and name of deploymnet
 metadata:
   name: nginx-deploy
@@ -48,7 +48,6 @@ spec:
     spec:
       containers:
       - name: nginx-deploy-cont
->>>>>>> 732bb9404fc5418ab8a28a142dcbc88db42e856e
         image: nginx:latest
         ports:
         - containerPort: 80
