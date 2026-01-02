@@ -2,13 +2,8 @@ kind: Namespace
 apiVersion: v1
 
 metadata:
-<<<<<<< HEAD
   name: nginx-ns
 
 
 
 
-
-=======
-  name: nginx-ns
->>>>>>> 732bb9404fc5418ab8a28a142dcbc88db42e856e
