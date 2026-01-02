@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stateless-cache-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache-demo
+  template:
+    metadata:
+      labels:
+        app: cache-demo
+    spec:
+      volumes:
+      - name: cache-volume
+        emptyDir: {}
+
+      containers:
+      - name: app
+        image: busybox
+        command: ["sh", "-c", "while true; do date >> /cache/data.txt; sleep 5; done"]
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /cache
