@@ -1,0 +1,27 @@
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: nginx-svc
+  namespace: nginx
+
+spec:
+  selector:
+    app: nginx
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+  type: NodePort    
+
+# Since nodeport is capable of exposing app outside cluster as well verify that also  
+# first login to one of the pod and and access application using nodeport ip and port no or dns this is inside cluster 
+# another way to access inside cluster is login to worker nodes and access the application 
+# but in worker using dns will not work only using svc(nodeport or svc) will work
+
+#Now outside cluster your ec2 terminal is outside cluster itself hence access application using workernodeip:specticportno curl http://10.0.0.0/30080
+
+#to access in browser you need to do port forward since we are in kind if we are minikube port forward is not needed for nodeport
+#but for cluster IP you need to do port forward even on minikube
