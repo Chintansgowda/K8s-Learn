@@ -1,0 +1,54 @@
+# Create a temporary shared storage inside a Pod and keep writing timestamps into a file.
+
+#Namespace
+
+kind: Namespace
+apiVersion: v1
+
+metadata:
+  name: storage
+
+---
+
+#Deployment
+
+kind: Deployment
+apiVersion: apps/v1
+
+# Deplyoment Metadata - consists namespace and name of deploymnet
+metadata:
+  name: cache-demo-deploy
+  namespace: storage
+
+# Deployment specs - consists an replicas and selector to match labels of pod
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache
+  
+  #Pod Template - consists metadata and specs of pod
+  template: 
+    metadata:
+      name: cache-demo-pod
+      labels:
+        app: cache  
+
+    #Pod specs - consists volume and conatiner and its specs
+    spec:
+      volumes: 
+      - name: cache-volume
+        emptyDir: {} # This creates an empty directory that is shared among containers in the Pod.
+
+      containers:
+      - name: cache-demo-cont
+        image: busybox
+        command: ["sh", "-c", "while true; do date >> /cache/data.txt; sleep 5; done"]
+        # continuously appends the current date/time to /cache/data.txt every 5 seconds.
+
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /cache
+
+      
+      

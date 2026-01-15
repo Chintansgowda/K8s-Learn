@@ -1,0 +1,49 @@
+# Now let's directly mount a directory from the Kubernetes node using HostPath volume type.
+# Usually Host Path Volume is used for testing purpose not for production
+
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: storage
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+
+# Deplyoment Metadata - consists namespace and name of deploymnet
+metadata:
+  name: apache-deploy
+  namespace: storage
+
+# Deployment specs - consists an replicas and selector to match labels of pod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache
+
+  #Pod Template - consists metadata and specs of pod
+  template:
+    metadata:
+      labels:
+        app: apache
+
+    # Pod specs - consists volume and conatiner and its specs
+    spec:
+      volumes:
+        - name: apache-hostpath-volume
+          hostPath:
+            path: /data/apache/persistent   # Path on the host node machine where pod data will be stored
+            type: DirectoryOrCreate        
+
+      containers:
+        - name: apache-cont
+          image: httpd:latest            
+          ports:
+            - containerPort: 80
+
+          volumeMounts:
+            - name: apache-hostpath-volume
+              mountPath: /usr/local/apache2/htdocs

@@ -1,0 +1,98 @@
+# #Install the metrics-server
+   
+    # If you are using a Kind cluster install Metrics Server
+
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+    # Edit the Metrics Server Deployment
+
+    kubectl -n kube-system edit deployment metrics-server
+
+    # Add the security bypass to deployment under container.args
+
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+
+        kubectl -n kube-system rollout restart deployment metrics-server
+    
+    kubectl top nodes
+
+# Install the VPA components
+
+   git clone https://github.com/kubernetes/autoscaler.git
+
+   cd autoscaler/vertical-pod-autoscaler
+
+   ./hack/vpa-up.sh
+
+#Verify VPA installation
+
+   kubectl get crd | grep verticalpodautoscaler 
+
+   # You should see:
+
+   verticalpodautoscalers.autoscaling.k8s.io
+   verticalpodautoscalercheckpoints.autoscaling.k8s.io
+
+
+# Check pods:
+
+kubectl get pods -n kube-system | grep vpa 
+
+# You should see:
+
+    vpa-recommender
+    vpa-updater
+    vpa-admission-controller
+
+
+#To generate load 
+
+kubectl exec -it mysql-sset-0 -n mysql -- bash  #login into mysql pod
+
+mysql -u root -p #Login: root
+
+# Enter password: xxxxxxxxxxx
+
+
+# Prepare database & table (one-time)
+
+USE devops;
+
+CREATE TABLE IF NOT EXISTS load_test (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  payload LONGTEXT
+);
+
+#Generate HEAVY MEMORY + CPU LOAD (BEST METHOD)
+
+# This stored procedure creates sustained pressure, which VPA needs.
+
+DELIMITER $$
+
+CREATE PROCEDURE finite_load()
+BEGIN
+  DECLARE i INT DEFAULT 0;
+  WHILE i < 300000 DO
+    INSERT INTO load_test (payload)
+    VALUES (REPEAT('X', 50000));
+    SET i = i + 1;
+  END WHILE;
+END$$
+
+DELIMITER ;
+
+CALL finite_load();
+
+
+# Monitor VPA recommendations
+
+watch kubectl top pod mysql-sset-0 -n mysql
+
+
+
+
+
+
+
+

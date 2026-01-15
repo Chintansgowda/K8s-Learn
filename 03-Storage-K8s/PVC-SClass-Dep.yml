@@ -1,0 +1,81 @@
+#Namespace
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: storage
+
+---
+
+#PersistentVolumeClaim
+
+kind: PersistentVolumeClaim
+apiVersion: v1  
+
+#PersistentVolumeClaim Metadata - consists name and namespace of pvc
+metadata:
+  name: nginx-pvc
+  namespace: storage
+
+#PersistentVolumeClaim specs - consists access modes, storage class and resources requests
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 500Mi
+  
+
+---
+
+
+# Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+
+# Deplyoment Metadata - consists namespace and name of deploymnet
+
+metadata:
+  name: nginx-deploy
+  namespace: storage
+
+# Deployment specs - consists an replicas and selector to match labels of pod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+
+  #Pod Template - consists metadata and specs of pod    
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: nginx
+
+    #Pod specs - consists volume and conatiner and its specs    
+    spec:
+
+      #volume - consists persistent volume claim 
+      volumes:
+      - name: nginx-pvc-volume
+        persistentVolumeClaim:
+          claimName: nginx-pvc
+
+      #Containers - consists container and its specs and also volume mounts
+      containers:
+      - name: nginx-cont
+        image: nginx:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+
+        volumeMounts:
+        - name: nginx-pvc-volume
+          mountPath: /usr/share/nginx/html
+
+
+
+    

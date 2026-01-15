@@ -1,0 +1,13 @@
+
+#ConfigMap
+
+kind: ConfigMap
+apiVersion: v1
+
+metadata:
+  name: mysql-config  # should use this name in statefulset to refer this configmap in env
+  namespace: mysql
+
+data:
+  MYSQL_USER: "chintan"
+  MYSQL_DATABASE: "devops"

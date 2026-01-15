@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-probe-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-probe
+  template:
+    metadata:
+      labels:
+        app: nginx-probe
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+
+        # ------STARTUP PROBE------ 
+        # Used only during application startup
+        # Prevents liveness and readiness probes from running too early
+
+        startupProbe:
+          exec:  # Execute a command inside the container
+            command:
+            - sh
+            - -c
+            - test -f /tmp/started  # Check if "startup-complete" file exists, 
+
+          failureThreshold: 30  #Number of times startup probe can fail before Kubernetes considers startup failed
+          periodSeconds: 5      # How often the startup probe runs (every 5 seconds)
+
+
+        #-------READINESS PROBE------
+        # Determines whether the pod should receive traffic
+        # If this probe fails, pod is removed from Service endpoints
+
+        readinessProbe:
+          httpGet:
+
+            # HTTP path to check if app is ready to serve traffic
+            path: /
+            port: 80
+          initialDelaySeconds: 5  # Delay before starting readiness checks after container starts
+          periodSeconds: 5
+          failureThreshold: 3    
+        # ------LIVENESS PROBE------
+
+        # Checks if the application is still alive
+        # If this probe fails, container is restarted
+
+        livenessProbe:
+          httpGet:
+
+            # HTTP path used to verify application health
+            path: /
+            port: 80
+          initialDelaySeconds: 10   # Delay before starting liveness checks Should be greater than readiness delay
+          periodSeconds: 10
+          failureThreshold: 3    
+
+
+---
+
+kind: Service
+apiVersion: v1 
+
+metadata:
+  name: probessvc
+  
+spec:
+  selector:
+    app: nginx-probe
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80 

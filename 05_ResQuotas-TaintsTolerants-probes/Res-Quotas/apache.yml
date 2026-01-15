@@ -1,0 +1,50 @@
+#NAMESPACE CREATION##
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apache
+
+---
+
+
+##DEPLOYMENT YAML FOR NGINX SERVER##
+apiVersion: apps/v1
+kind: Deployment
+
+metadata: #Deploy metadata
+  name: apache-deploy
+  namespace: apache
+  labels:
+    env: dev
+
+spec: #Deploy spec
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache #Should be same as labels under pod template
+
+  #Pod Template
+  template:
+    metadata: #Pod metadate
+      # name: ingress-apache-Pod   #not needed k8s ignores this in deploy.yml replica.yml pods names are generated automatically 
+      labels:
+        app: apache
+
+
+    spec:  #Pod spec
+      containers:
+      - name: apache-cont
+        image: httpd:2.4
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi" 

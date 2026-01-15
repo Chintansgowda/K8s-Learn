@@ -1,0 +1,123 @@
+#Namespace
+
+kind: Namespace
+apiVersion: v1  
+
+#Namespace Metadata - Consists name of namespace
+metadata:
+  name: mysql
+
+---
+
+#Service
+
+kind: Service
+apiVersion: v1 
+
+#Service  Metadata - Consists name and namespace of service
+metadata:
+  name: mysql-svc
+  namespace: mysql
+
+#Service specs - consists selector to match labels of pod and ports to expose
+spec: 
+  selector:
+    app: mysql
+
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  clusterIP: None   #Headless Service for Statefulset
+
+
+---
+
+#Statefulset
+
+kind: StatefulSet
+apiVersion: apps/v1
+
+#Statefulset Metadata - consists name and namespace of statefulset
+
+metadata:
+  name: mysql-sset
+  namespace: mysql
+
+#Statefulset specs - consists serviceName, replicas, selector to match labels of pod and pod template and volume claim templates
+
+spec:
+  serviceName: mysql-svc
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mysql  #label to match with pod labels 
+
+  #Pod Template - consists metadata and specs of pod
+  template:
+    metadata:
+      name: mysql-pod
+      labels:
+        app: mysql  #Pod Labels
+
+      
+    spec:
+      containers: 
+      - name: mysql-cont
+        image: mysql
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+
+        #Environment Variables for mysql container
+
+        env:
+
+        #ConfigMap Examples
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_DATABASE              
+
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_USER
+
+        
+        #Secret examples
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+
+
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+
+
+        #Mounting Volume to container 
+
+        volumeMounts: 
+        - name: mysql-data  #Should be same as volume claim template name
+          mountPath: /var/lib/mysql
+
+
+  # Volume Claim Templates - consists metadata and spec of pvc
+
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: standard # specify storage class shoulb be an Cloud Storage but we are using kind cluster so standard
+      resources:
+        requests:
+          storage: 500Mi

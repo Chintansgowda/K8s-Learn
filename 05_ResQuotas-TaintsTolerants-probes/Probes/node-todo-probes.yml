@@ -1,0 +1,115 @@
+# Namespace 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: todo
+
+---
+
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-deploy
+  namespace: todo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - name: todo-container
+        image: chintan0206/node-todo-k8s:latest
+        ports:
+        - containerPort: 8000
+
+        # ---------------- STARTUP PROBE ----------------
+        # - Used ONLY during container startup
+        # - Blocks readiness & liveness until it succeeds
+
+
+        startupProbe:
+          httpGet:
+            path: /health        # Kubernetes sends HTTP GET /health
+            port: 8000           # On container port 8000
+          periodSeconds: 3       # Check every 3 seconds
+          failureThreshold: 10   # Allow 10 failures before giving up
+                                 # Total startup wait time = 10 × 3 = 30 seconds
+
+        # SUCCESS CONDITION:
+        # - HTTP status 200–399 → startup SUCCESS
+        # - Readiness & liveness probes will start
+
+        # FAILURE CONDITION:
+        # - If /health never succeeds within 30s
+        # - Kubernetes restarts the container
+
+
+        # ---------------- READINESS PROBE ----------------
+        # Purpose:
+        # - Controls whether the pod receives traffic
+        # - DOES NOT restart the container
+        # - Used by Service / LoadBalancer / Ingress
+
+        readinessProbe:
+          httpGet:
+            path: /ready         # Kubernetes checks if app is ready to serve users
+            port: 8000
+          initialDelaySeconds: 5 # Wait 5 seconds AFTER startup probe succeeds
+          periodSeconds: 5       # Check readiness every 5 seconds
+
+        # SUCCESS CONDITION:
+        # - HTTP status 200–399 → Pod marked READY
+        # - Pod IP added to Service endpoints
+        # - Traffic starts flowing
+
+        # FAILURE CONDITION:
+        # - Any error / timeout / non-2xx
+        # - Pod marked NOT READY
+        # - Pod removed from Service endpoints
+        # - Container keeps running (NO restart)
+
+
+        # ---------------- LIVENESS PROBE ----------------
+        # Purpose:
+        # - Detects if the application is dead or stuck
+        # - Restarts the container on failure
+        # - Enables self-healing
+
+        livenessProbe:
+          httpGet:
+            path: /health        # Reuse /health to check app is still alive
+            port: 8000
+          initialDelaySeconds: 15 # Wait 15 seconds AFTER startup probe succeeds
+          periodSeconds: 10       # Check liveness every 10 seconds
+
+        # SUCCESS CONDITION:
+        # - HTTP status 200–399 → Container considered healthy
+
+        # FAILURE CONDITION:
+        # - Repeated failures (default 3)
+        # - Kubernetes kills the container
+        # - Container restarts
+        # - Startup probe runs again after restart
+
+---
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-svc
+  namespace: todo
+spec:
+  selector:
+    app: todo
+  type: NodePort
+  ports:
+  - port: 8001
+    targetPort: 8000
+    nodePort: 30007

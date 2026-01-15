@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+
+metadata:
+  name: apache-manager-role
+  namespace: apache
+
+rules:
+- apiGroups: ["","apps","autoscaling","batch","networking.k8s.io"]
+  resources: ["pods","namespaces", "services", "statefulsets", "deployments", "horizontalpodautoscalers", "cronjobs", "ingresses"]
+  verbs: ["get", "create", "delete", "watch"]

@@ -1,0 +1,71 @@
+#APACHE NAMESPACE
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: apache
+
+---
+
+#APACHE DEPLOYMENT
+
+apiVersion: apps/v1
+kind: Deployment
+
+#Deploy metadata 
+metadata:
+  name: apache-deploy
+  namespace: apache
+
+#Deploy spec
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache  #Must match pod labels in template
+
+  #Pod template 
+  template:
+    metadata:
+      name: apache-pod
+      labels:
+        app: apache  #Must match Deployment selector
+
+    #Pod/Cont spec
+    spec:
+      containers:
+      - name: apche-cont
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+
+      #Resouces limit for cont
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+
+
+
+--- 
+
+#APACHE SERVICE
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: apache-svc
+  namespace: apache
+
+spec:
+  selector:
+    app: apache
+  ports:
+  - protocol: TCP
+    port: 7000
+    targetPort: 80
+  type: ClusterIP
